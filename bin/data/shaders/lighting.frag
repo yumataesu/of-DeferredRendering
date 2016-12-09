@@ -1,0 +1,91 @@
+#version 330 core
+
+struct Light
+{
+    vec3 position;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+const int LightNUM = 10;
+
+uniform Light light[LightNUM];
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D gAlbedo;
+uniform vec3 viewPos;
+
+uniform float constant;
+uniform float linear;
+uniform float quadratic;
+
+uniform int DebugMode;
+
+
+in vec2 TexCoord;
+
+out vec4 color;
+
+void main()
+{
+    vec3 position = texture(gPosition, TexCoord).xyz;
+    vec3 normal = texture(gNormal, TexCoord).xyz;
+    vec3 albedo = texture(gAlbedo, TexCoord).rgb;
+    
+    vec3 lighting  = vec3(0.0, 0.0, 0.0);
+    
+    for(int i = 0; i < LightNUM; i++)
+    {
+        float distance = length(light[i].position - position);
+        if(distance < 500)
+        {
+            //Ambient
+            vec3 ambient = albedo * 0.1;
+            
+            //Diffuse
+            vec3 lightDir = normalize(light[i].position - position);
+            vec3 diffuse = max(dot(normal, lightDir), 0.0) * light[i].diffuse;
+            
+            //Specular
+            vec3 viewDir  = normalize(viewPos - position);
+            vec3 halfwayDir = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(normal, halfwayDir), 0.0), 16.0);
+            vec3 specular = light[i].specular * spec;
+            
+            
+            //Attenuation
+            float dist = length(light[i].position - position);
+            float attenuation = 0 + (0 * dist) + (0.0001 * dist * dist);
+            
+            
+            ambient /= attenuation;
+            diffuse /= attenuation;
+            specular /= attenuation;
+            lighting += ambient + diffuse + specular;
+        }
+    }
+    
+    
+    if(DebugMode == 0)
+    {
+        color = vec4(lighting, 1.0);
+    }
+    
+    else if(DebugMode == 1)
+    {
+        lighting = position;
+        color = vec4(lighting, 1.0);
+    }
+    
+    else if(DebugMode == 2)
+    {
+        lighting = normal;
+        color = vec4(lighting, 1.0);
+    }
+    
+    else if(DebugMode == 3)
+    {
+        lighting = albedo;
+        color = vec4(lighting, 1.0);
+    }
+}
