@@ -2,7 +2,7 @@
 
 This is Deferred Rendering openFrameworks Project for Qiita Advent Calender 11th Dec.
 
-→URL
+→[http://qiita.com/y_UM4/items/7647fd9fc19e60ec5822](http://qiita.com/y_UM4/items/7647fd9fc19e60ec5822)
 
 * openFrameworks 0.9.7
 * OpenGL 3.3
