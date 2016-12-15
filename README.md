@@ -1,6 +1,6 @@
 # of-DeferredRendering
 
-This is Deferred Rendering openFrameworks Project for Qiita Advent Calender 11th Dec.
+This is a Deferred Rendering openFrameworks Project for Qiita Advent Calender 11th Dec.
 
 →[http://qiita.com/y_UM4/items/7647fd9fc19e60ec5822](http://qiita.com/y_UM4/items/7647fd9fc19e60ec5822)
 
