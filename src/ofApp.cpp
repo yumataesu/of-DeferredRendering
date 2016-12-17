@@ -22,7 +22,7 @@ class ofApp : public ofBaseApp{
     ofVec3f pos[NUM];
     PointLight pointlight[LightNUM];
     ofEasyCam cam;
-    ofShader GeometryPass, LightingPass, SSAOPass;
+    ofShader GeometryPass, LightingPass, SSAOPass, SSAOBlurPass;
     
     GLuint gBuffer;
     GLuint gPosition, gNormal, gAlbedo, gDepth;
@@ -63,6 +63,7 @@ class ofApp : public ofBaseApp{
         GeometryPass.load("shaders/gBuffer");
         LightingPass.load("shaders/lighting");
         SSAOPass.load("shaders/ssao");
+        SSAOBlurPass.load("shaders/blur_for_ssao");
         
         ofDisableArbTex();
         ofLoadImage(texture, "tex/concrete.jpg");
@@ -199,9 +200,6 @@ class ofApp : public ofBaseApp{
         quad.addVertex(ofVec3f(-1.0, 1.0, 0.0));
         quad.addTexCoord(ofVec2f(0.0f, 1.0f));
         
-        constant = 0.02f;
-        linear = 0.0f;
-        quadratic = 0.00001f;
         DebugMode = 0;
     }
     
@@ -240,13 +238,13 @@ class ofApp : public ofBaseApp{
         
         for(int i = 0; i < NUM; i++)
         {
-            pos[i].y -= 0.2;
+            //pos[i].y -= 0.2;
             ofMatrix4x4 model;
             model.translate(pos[i]);
             GeometryPass.setUniformMatrix4f("model", model);
             
             box.draw();
-            if(pos[i].y < -35) pos[i].y = 35;
+            //if(pos[i].y < -35) pos[i].y = 35;
         }
         
         GeometryPass.end();
@@ -274,13 +272,25 @@ class ofApp : public ofBaseApp{
         SSAOPass.end();
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        
+        
+        //3.SSAO Pass
+        glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+        glClear(GL_COLOR_BUFFER_BIT);
+        SSAOBlurPass.begin();
+        SSAOBlurPass.setUniformTexture("ssao", GL_TEXTURE_2D, ssaoColorBuffer, 0);
+        quad.draw(OF_MESH_FILL);
+        SSAOBlurPass.end();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-                
+        
+        
         LightingPass.begin();
         LightingPass.setUniformTexture("gPosition", GL_TEXTURE_2D, gPosition, 0);
         LightingPass.setUniformTexture("gNormal", GL_TEXTURE_2D, gNormal, 1);
         LightingPass.setUniformTexture("gAlbedo", GL_TEXTURE_2D, gAlbedo, 2);
-        LightingPass.setUniformTexture("ssao", GL_TEXTURE_2D, ssaoColorBuffer, 3);
+        LightingPass.setUniformTexture("ssao", GL_TEXTURE_2D, ssaoColorBufferBlur, 3);
         LightingPass.setUniform3f("ViewPos", cam.getPosition());
         
         for(int i = 0; i < LightNUM; i++)
